@@ -1,0 +1,29 @@
+# 确保你已经安装了相关库: pip install datasets pyarrow pandas
+from datasets import load_dataset
+import pyarrow.ipc
+import pandas as pd
+
+# 1. 先用datasets库加载数据集，这会让它把数据下载并缓存到本地
+# (如果已经加载过，它会直接从缓存读取)
+dataset = load_dataset("rotten_tomatoes")
+
+# 2. 找到训练集对应的arrow文件在本地的存储路径
+# dataset.cache_files会返回一个列表，里面是所有缓存文件的信息
+arrow_file_path = dataset['train'].cache_files[0]['filename']
+print(f"找到本地Arrow文件路径: {arrow_file_path}\n")
+
+# 3. 使用pyarrow库来读取这个二进制文件
+try:
+    with pyarrow.ipc.open_file(arrow_file_path) as reader:
+        # 将整个arrow文件读成一个pyarrow Table对象
+        pa_table = reader.read_all()
+        
+        # 4. (最关键的一步) 为了方便查看，把pyarrow Table转换成我们熟悉的pandas DataFrame
+        df = pa_table.to_pandas()
+        
+        # 5. 打印DataFrame的前5行，一窥究竟！
+        print("用代码读取Arrow文件内容，并以表格形式展示前5行:")
+        print(df.head())
+
+except Exception as e:
+    print(f"读取文件时出错: {e}")

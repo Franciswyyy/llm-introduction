@@ -1,0 +1,216 @@
+# 确保你已经安装了datasets库: pip install datasets
+import sys
+
+# 导入我们的数据集管理模块
+try:
+    from utils import get_dataset
+    print("✅ 成功导入数据集管理模块")
+except ImportError as e:
+    print(f"❌ 导入模块失败: {e}")
+    print("💡 请确保utils包安装正确")
+    sys.exit(1)
+
+# 1. 使用智能数据集加载器（支持本地缓存）
+print("🚀 启动数据集加载器...")
+dataset = get_dataset()
+
+if dataset is None:
+    print("❌ 数据集加载失败，程序退出")
+    sys.exit(1)
+
+# 2. 查看数据集的整体结构
+# 你会看到它包含了 train, validation, test 三个部分
+print("数据集结构:")
+print(dataset)
+
+
+# 3. 查看训练集的前5条数据，看看它到底长什么样
+print("\n训练集前5条示例:")
+# dataset['train'] 就像一个列表，你可以用索引和切片来访问
+for i in range(5):
+    example = dataset['train'][i]
+    # 'text' 是影评内容，'label' 是标签 (0代表差评, 1代表好评)
+    print(f"  影评 {i+1}: {example['text']}")
+    print(f"  标签: {'好评' if example['label'] == 1 else '差评'}")
+    print("-" * 20)
+
+
+# 4. 数据探索 - 查看前10条数据
+print("\n=== 数据探索 ===")
+
+# 获取前10条数据
+first_10 = dataset['train'][0:10]
+print("前10条数据:")
+print(first_10)
+
+print("\n前10条文本内容:")
+texts = dataset['train'][0:10]['text']
+for i, text in enumerate(texts):
+    print(f"{i+1}. {text[:50]}...")
+
+print("\n前10条标签:")
+labels = dataset['train'][0:10]['label']
+print(labels)
+
+# 正确的标签统计方法 - 使用Python内置函数
+from collections import Counter
+import matplotlib.pyplot as plt
+
+# 配置中文字体支持
+plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'DejaVu Sans', 'SimHei', 'Helvetica']
+plt.rcParams['axes.unicode_minus'] = False
+
+# 统计前10条的标签分布
+label_counts = Counter(labels)
+print(f"\n前10条数据标签分布:")
+print(f"差评(0): {label_counts[0]} 条")
+print(f"好评(1): {label_counts[1]} 条")
+
+# 统计整个训练集的标签分布
+all_labels = dataset['train']['label']
+all_label_counts = Counter(all_labels)
+print(f"\n整个训练集标签分布:")
+print(f"差评(0): {all_label_counts[0]} 条")
+print(f"好评(1): {all_label_counts[1]} 条")
+
+# 绘制标签分布图
+plt.figure(figsize=(12, 4))
+
+# 子图1：柱状图
+plt.subplot(1, 2, 1)
+labels_names = ['差评', '好评']
+counts = [all_label_counts[0], all_label_counts[1]]
+plt.bar(labels_names, counts, color=['lightcoral', 'lightgreen'])
+plt.title('训练集标签分布 - 柱状图')
+plt.ylabel('数量')
+
+# 子图2：饼图  
+plt.subplot(1, 2, 2)
+plt.pie(counts, labels=labels_names, autopct='%1.1f%%', colors=['lightcoral', 'lightgreen'])
+plt.title('训练集标签分布 - 饼图')
+
+plt.tight_layout()
+plt.savefig('data_distribution.png', dpi=300, bbox_inches='tight')
+plt.show()
+print("\n📊 训练集标签分布图已保存为 data_distribution.png")
+
+# 5. 分析所有数据集的分布情况
+print("\n" + "="*60)
+print("📊 TRAIN、VALIDATION、TEST 数据集完整分析")
+print("="*60)
+
+# 分析函数
+def analyze_dataset(dataset_split, split_name):
+    print(f"\n🔍 {split_name} 数据集分析:")
+    print(f"   总样本数: {len(dataset_split):,} 条")
+    
+    # 标签统计
+    labels = dataset_split['label']
+    label_counts = Counter(labels)
+    
+    print(f"   差评(0): {label_counts[0]:,} 条 ({label_counts[0]/len(dataset_split)*100:.1f}%)")
+    print(f"   好评(1): {label_counts[1]:,} 条 ({label_counts[1]/len(dataset_split)*100:.1f}%)")
+    
+    # 文本长度统计
+    text_lengths = [len(text.split()) for text in dataset_split['text']]
+    avg_length = sum(text_lengths) / len(text_lengths)
+    min_length = min(text_lengths)
+    max_length = max(text_lengths)
+    
+    print(f"   平均文本长度: {avg_length:.1f} 词")
+    print(f"   最短文本: {min_length} 词")
+    print(f"   最长文本: {max_length} 词")
+    
+    # 显示几个样例
+    print(f"   📝 {split_name} 样例:")
+    for i in range(min(3, len(dataset_split))):
+        text = dataset_split[i]['text']
+        label = '好评👍' if dataset_split[i]['label'] == 1 else '差评👎'
+        print(f"      {i+1}. [{label}] {text[:60]}...")
+    
+    return label_counts, text_lengths
+
+# 分析三个数据集
+train_label_counts, train_lengths = analyze_dataset(dataset['train'], "TRAIN")
+val_label_counts, val_lengths = analyze_dataset(dataset['validation'], "VALIDATION") 
+test_label_counts, test_lengths = analyze_dataset(dataset['test'], "TEST")
+
+# 6. 生成对比可视化
+print(f"\n📊 生成三个数据集对比图表...")
+
+fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+
+# 第一行：标签分布柱状图
+datasets_info = [
+    ("Train", train_label_counts, len(dataset['train'])),
+    ("Validation", val_label_counts, len(dataset['validation'])),
+    ("Test", test_label_counts, len(dataset['test']))
+]
+
+for i, (name, counts, total) in enumerate(datasets_info):
+    ax = axes[0, i]
+    labels_names = ['差评', '好评']
+    values = [counts[0], counts[1]]
+    percentages = [v/total*100 for v in values]
+    
+    bars = ax.bar(labels_names, values, color=['lightcoral', 'lightgreen'])
+    ax.set_title(f'{name} 数据集\n标签分布')
+    ax.set_ylabel('数量')
+    
+    # 添加百分比标签
+    for bar, pct in zip(bars, percentages):
+        height = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width()/2., height + total*0.01,
+                f'{pct:.1f}%', ha='center', va='bottom')
+
+# 第二行：文本长度分布
+length_data = [train_lengths, val_lengths, test_lengths]
+titles = ['Train 文本长度分布', 'Validation 文本长度分布', 'Test 文本长度分布']
+
+for i, (lengths, title) in enumerate(zip(length_data, titles)):
+    ax = axes[1, i]
+    ax.hist(lengths, bins=30, alpha=0.7, color='skyblue', edgecolor='black')
+    ax.set_title(title)
+    ax.set_xlabel('文本长度 (词数)')
+    ax.set_ylabel('频次')
+    ax.axvline(sum(lengths)/len(lengths), color='red', linestyle='--', 
+               label=f'平均: {sum(lengths)/len(lengths):.1f}')
+    ax.legend()
+
+plt.tight_layout()
+plt.savefig('all_datasets_analysis.png', dpi=300, bbox_inches='tight')
+plt.show()
+print("\n📊 完整数据集分析图已保存为 all_datasets_analysis.png")
+
+# 7. 生成汇总对比表
+print(f"\n📋 数据集汇总对比表:")
+print("-" * 80)
+print(f"{'数据集':<12} {'总数':<8} {'差评':<8} {'好评':<8} {'差评%':<8} {'好评%':<8} {'平均长度':<10}")
+print("-" * 80)
+
+for name, counts, lengths in [("Train", train_label_counts, train_lengths),
+                              ("Validation", val_label_counts, val_lengths), 
+                              ("Test", test_label_counts, test_lengths)]:
+    total = counts[0] + counts[1]
+    avg_len = sum(lengths) / len(lengths)
+    print(f"{name:<12} {total:<8} {counts[0]:<8} {counts[1]:<8} "
+          f"{counts[0]/total*100:<7.1f}% {counts[1]/total*100:<7.1f}% {avg_len:<10.1f}")
+
+print("-" * 80)
+
+# 8. 数据质量检查
+print(f"\n🔍 数据质量检查:")
+all_datasets = [dataset['train'], dataset['validation'], dataset['test']]
+dataset_names = ['Train', 'Validation', 'Test']
+
+for ds, name in zip(all_datasets, dataset_names):
+    # 检查空文本
+    empty_texts = sum(1 for text in ds['text'] if not text.strip())
+    # 检查异常长度
+    very_short = sum(1 for text in ds['text'] if len(text.strip()) < 5)
+    very_long = sum(1 for text in ds['text'] if len(text.split()) > 100)
+    
+    print(f"   {name}:")
+    print(f"     空文本: {empty_texts} 条")
+    print(f"     过短文本(<5字符): {very_short} 条") 
+    print(f"     过长文本(>100词): {very_long} 条")
