@@ -25,11 +25,12 @@ ai-hello/
 ├── train_model.py            # 训练微调脚本
 ├── predict.py                # 预测脚本
 ├── README.md                 # 说明文档
-├── models/                   # 预训练模型（自动创建）
-│   └── twitter-roberta-base-sentiment-latest/
-├── datasets/                 # 数据集（自动创建）
-│   └── rotten_tomatoes/
-├── trained_model/            # 训练后模型（自动创建）
+├── resources/                # 资源文件夹
+│   ├── datasets/             # 数据集（自动创建）
+│   │   └── rotten_tomatoes/
+│   ├── pretrained_models/    # 预训练模型（自动创建）
+│   │   └── twitter-roberta-base-sentiment-latest/
+│   └── trained_models/       # 训练后模型（自动创建）
 ├── confusion_matrix.png      # 训练模型混淆矩阵（自动生成）
 └── pretrained_confusion_matrix.png  # 预训练模型混淆矩阵（自动生成）
 ```
@@ -178,7 +179,7 @@ python predict.py
 如需清理下载的文件以释放空间：
 ```bash
 # 删除模型文件
-rm -rf models/ datasets/ trained_model/
+rm -rf resources/
 
 # 删除生成的图片
 rm -f confusion_matrix.png

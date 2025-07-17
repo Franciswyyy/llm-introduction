@@ -33,7 +33,7 @@ def run_sentiment_analysis(config_path: str = None):
     
     # 默认配置文件
     if config_path is None:
-        config_path = PROJECT_ROOT / "configs" / "sentiment_analysis.yaml"
+        config_path = PROJECT_ROOT / "utils" / "sentiment_analysis.yaml"
     
     # 加载配置
     with open(config_path, 'r', encoding='utf-8') as f:

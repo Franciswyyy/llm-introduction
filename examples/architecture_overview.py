@@ -43,11 +43,18 @@ llm-introduction/
 │       └── text_classification.py  # 文本分类流水线
 ├── tasks/                          # 🎯 具体业务任务
 │   └── sentiment_analysis/         # 情感分析任务
-├── configs/                        # ⚙️ 配置文件
-│   └── sentiment_analysis.yaml     # 任务配置
-├── scripts/                        # 🛠️ 工具脚本
-│   └── demo_new_architecture.py    # 演示脚本
-└── utils/                          # 🔧 原有工具（向后兼容）
+├── examples/                       # 🛠️ 示例和学习材料
+│   ├── architecture_overview.py    # 架构概览
+│   ├── demo_new_architecture.py    # 演示脚本
+│   ├── learn_datasets.py          # Datasets库学习
+│   └── learn_transformers.py      # Transformers库学习
+├── utils/                          # 🔧 工具和配置
+│   ├── sentiment_analysis.yaml     # 任务配置
+│   └── data_builder.py            # 数据构建工具
+└── resources/                      # 📦 资源文件夹
+    ├── datasets/                   # 数据集
+    ├── pretrained_models/          # 预训练模型
+    └── trained_models/             # 训练后模型
     """)
     
     print("\n🌟 新架构的核心优势:")

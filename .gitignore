@@ -22,17 +22,13 @@ wheels/
 *.egg
 MANIFEST
 
-# 数据集文件（通常很大）
-datasets/
+# 资源文件（通常很大）
+resources/
 *.arrow
 *.parquet
 *.csv
 *.tsv
 *.json.gz
-
-# 模型文件（通常很大）  
-models/
-trained_model/
 *.bin
 *.safetensors
 *.pt
