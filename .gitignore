@@ -95,3 +95,4 @@ temp/
 # 配置文件中的敏感信息
 config.ini
 secrets.yaml
+llm-env/
