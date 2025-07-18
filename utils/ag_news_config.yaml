@@ -1,0 +1,46 @@
+# AG News数据集配置示例  
+# 展示如何配置多分类任务（新闻分类：4个类别）
+
+task:
+  name: "ag_news_classification"
+  description: "AG News新闻分类任务（4类：World, Sports, Business, Technology）"
+  version: "1.0"
+
+# 数据配置 - 使用AG News数据集
+data:
+  loader_type: "HuggingFaceLoader"
+  dataset_name: "ag_news"  # 4分类新闻数据集
+  preprocessing:
+    max_length: 256  # 新闻标题通常较短
+    truncation: true
+    text_column: "text"
+    label_column: "label"
+
+# 模型配置 - 对于多分类任务可能需要不同的模型
+models:
+  # 注意：这个模型是针对情感分析的，对新闻分类可能效果不佳
+  # 实际应用中建议使用通用的文本分类模型
+  sentiment_model: "distilbert-base-uncased"  # 更通用的模型
+  device: "auto"
+  models_cache_dir: "./models"
+
+# 评估配置
+evaluation:
+  metrics: 
+    - "accuracy"
+    - "precision" 
+    - "recall"
+    - "f1"
+    - "classification_report"
+  average: "weighted"  # 对多分类任务很重要
+
+# 流水线配置
+pipeline:
+  save_results: true
+  output_dir: "./results"
+
+# 实验设置
+experiment:
+  seed: 42
+  tags: ["ag_news", "multiclass", "news"]
+  notes: "AG News数据集新闻分类实验 - 4分类任务" 

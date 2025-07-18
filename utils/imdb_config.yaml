@@ -1,0 +1,44 @@
+# IMDB数据集配置示例
+# 展示如何配置使用不同的HuggingFace数据集
+
+task:
+  name: "imdb_sentiment_analysis"
+  description: "IMDB电影评论情感分析任务"
+  version: "1.0"
+
+# 数据配置 - 使用IMDB数据集
+data:
+  loader_type: "HuggingFaceLoader"
+  dataset_name: "imdb"  # 替换为IMDB数据集
+  preprocessing:
+    max_length: 512
+    truncation: true
+    text_column: "text"
+    label_column: "label"
+
+# 模型配置
+models:
+  sentiment_model: "cardiffnlp/twitter-roberta-base-sentiment-latest"
+  device: "auto"
+  models_cache_dir: "./models"
+
+# 评估配置
+evaluation:
+  metrics: 
+    - "accuracy"
+    - "precision" 
+    - "recall"
+    - "f1"
+    - "classification_report"
+  average: "weighted"
+
+# 流水线配置
+pipeline:
+  save_results: true
+  output_dir: "./results"
+
+# 实验设置
+experiment:
+  seed: 42
+  tags: ["imdb", "sentiment"]
+  notes: "IMDB数据集情感分析实验" 

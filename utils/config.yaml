@@ -1,0 +1,161 @@
+# 情感分析任务配置文件
+# 这是一个YAML配置文件示例，展示如何使用YAML管理实验参数
+# 与Python配置模块(utils.config)协同工作
+
+task:
+  name: "sentiment_analysis"
+  description: "电影评论情感分析任务"
+  version: "1.0"
+  author: "AI Team"
+
+# 数据配置 - 经常需要切换不同数据集
+data:
+  loader_type: "HuggingFaceLoader"
+  dataset_name: "rotten_tomatoes"
+  # 注意：cache_dir 会被Python配置覆盖，使用统一的路径管理
+  cache_dir: "./datasets"  # 将被utils.config中的DATASETS_DIR覆盖
+  
+  # 数据预处理参数
+  preprocessing:
+    max_length: 512
+    truncation: true
+    remove_duplicates: false
+    text_column: "text"
+    label_column: "label"
+
+# 嵌入模型配置 - 实验时经常调整的参数
+embedding:
+  model_type: "SentenceTransformerEmbedding"
+  model_name: "sentence-transformers/all-mpnet-base-v2"
+  batch_size: 32
+  normalize_embeddings: true  # 通常建议开启
+  device: null  # null表示自动选择，会使用Python配置的get_device()
+  
+  # 高级参数
+  max_seq_length: 384
+  show_progress_bar: true
+  convert_to_numpy: true
+
+# 分类器配置 - 支持多个分类器对比实验
+classifiers:
+  # 传统机器学习方法
+  - type: "LogisticRegressionClassifier"
+    name: "logistic_regression"
+    enabled: true  # 可以通过这个开关控制是否运行
+    params:
+      random_state: 42
+      max_iter: 1000
+      C: 1.0
+      solver: "liblinear"
+  
+  - type: "SVMClassifier"
+    name: "svm"
+    enabled: false  # 暂时禁用，节省时间
+    params:
+      kernel: "rbf"
+      C: 1.0
+      random_state: 42
+  
+  - type: "RandomForestClassifier"
+    name: "random_forest"
+    enabled: false
+    params:
+      n_estimators: 100
+      random_state: 42
+      max_depth: 10
+  
+  # 相似度方法
+  - type: "SimilarityClassifier"  
+    name: "cosine_similarity"
+    enabled: true
+    params:
+      metric: "cosine"
+      k: 10  # top-k相似样本
+
+# 评估配置 - 控制评估指标和方式
+evaluation:
+  metrics: 
+    - "accuracy"
+    - "precision" 
+    - "recall"
+    - "f1"
+    - "confusion_matrix"
+    - "classification_report"
+  average: "weighted"  # macro, micro, weighted
+  cross_validation: 
+    enabled: false  # 是否使用交叉验证
+    folds: 5
+  
+  # 可视化设置
+  visualization:
+    save_plots: true
+    plot_format: "png"  # png, pdf, svg
+    dpi: 300
+    figsize: [10, 8]
+
+# 流水线配置 - 控制整体流程
+pipeline:
+  cache_embeddings: true
+  cache_dir: "./cache"  # 将被Python配置覆盖
+  save_results: true
+  output_dir: "./results"  # 将被Python配置覆盖
+  
+  # 性能优化
+  parallel_processing: true
+  n_jobs: -1  # -1表示使用所有可用CPU核心
+  
+  # 日志设置
+  logging:
+    level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+    save_logs: true
+    log_file: "experiment.log"
+
+# 实验设置 - 便于重现实验
+experiment:
+  seed: 42  # 随机种子，确保结果可重现
+  sample_data: false  # 是否使用数据采样（调试时有用）
+  sample_size: 1000  # 采样大小
+  
+  # 实验元信息
+  tags: ["baseline", "sentence-transformers"]
+  notes: "使用all-mpnet-base-v2模型的基线实验" 
+
+# 路径计算方法示例
+# 展示从 utils/config.py 寻找 resources 目录的不同方法
+
+# 方法1: 通过项目根目录 (当前使用的方法)
+method_1:
+  description: "先找项目根目录，再找resources"
+  code: |
+    PROJECT_ROOT = Path(__file__).parent.parent
+    RESOURCES_DIR = PROJECT_ROOT / "resources"
+
+# 方法2: 直接相对路径
+method_2:
+  description: "直接使用相对路径"
+  code: |
+    RESOURCES_DIR = Path(__file__).parent / "../resources"
+    # 等价于: Path(__file__).parent.parent / "resources"
+
+# 方法3: 使用 resolve() 获取绝对路径
+method_3:
+  description: "获取绝对路径，避免相对路径问题"
+  code: |
+    RESOURCES_DIR = (Path(__file__).parent / "../resources").resolve()
+
+# 方法4: 从任意位置寻找 resources 目录
+method_4:
+  description: "向上搜索，直到找到包含resources的目录"
+  code: |
+    def find_resources_dir():
+        current = Path(__file__).parent
+        while current != current.parent:  # 直到根目录
+            if (current / "resources").exists():
+                return current / "resources"
+            current = current.parent
+        raise FileNotFoundError("未找到resources目录")
+
+# 推荐使用的方法
+recommended:
+  method: "method_1"
+  reason: "清晰、可读性好、不容易出错" 

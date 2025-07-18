@@ -22,14 +22,31 @@ class HuggingFaceLoader(BaseDataLoader):
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.dataset_name = config.get('dataset_name', 'rotten_tomatoes')
-        self.label_names = ['negative', 'positive']  # 对于rotten_tomatoes
+        
+        # 根据数据集名称设置标签名称
+        self.label_names = self._get_label_names_for_dataset(self.dataset_name)
+    
+    @staticmethod
+    def load_dataset(dataset_name: str) -> Dict[str, Any]:
+        """
+        静态方法：直接通过数据集名称加载数据集
+        
+        Args:
+            dataset_name: 数据集名称，如 "rotten_tomatoes", "imdb" 等
+            
+        Returns:
+            加载的数据集字典
+        """
+        from utils.data_builder import get_dataset_by_name
+        return get_dataset_by_name(dataset_name)
     
     def load(self) -> Dict[str, Any]:
         """加载Hugging Face数据集"""
         print(f"🔄 正在加载数据集: {self.dataset_name}")
         
-        # 使用原有的utils工具
-        self.data = get_dataset()
+        # 使用配置中的数据集名称
+        from utils.data_builder import get_dataset_by_name
+        self.data = get_dataset_by_name(self.dataset_name)
         
         if self.data is None:
             raise ValueError(f"无法加载数据集: {self.dataset_name}")
@@ -56,6 +73,24 @@ class HuggingFaceLoader(BaseDataLoader):
             raise ValueError(f"数据集中不存在分割: {split}")
         
         return self.data[split]["label"]
+    
+    def _get_label_names_for_dataset(self, dataset_name: str) -> List[str]:
+        """根据数据集名称获取标签名称"""
+        # 常见情感分析数据集的标签映射
+        label_mappings = {
+            'rotten_tomatoes': ['negative', 'positive'],
+            'imdb': ['negative', 'positive'],
+            'sst2': ['negative', 'positive'],
+            'amazon_polarity': ['negative', 'positive'],
+            'yelp_polarity': ['negative', 'positive'],
+            'ag_news': ['World', 'Sports', 'Business', 'Technology'],
+            'dbpedia_14': ['Company', 'Educational Institution', 'Artist', 'Athlete', 
+                          'Office Holder', 'Mean of Transportation', 'Building', 
+                          'Natural Place', 'Village', 'Animal', 'Plant', 'Album', 
+                          'Film', 'Written Work'],
+        }
+        
+        return label_mappings.get(dataset_name, ['label_0', 'label_1'])  # 默认二分类标签
     
     def get_label_names(self) -> List[str]:
         """获取标签名称"""

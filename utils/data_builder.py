@@ -26,65 +26,52 @@ def setup_directories():
         directory.mkdir(exist_ok=True, parents=True)
     print(f"📁 目录结构已创建: {PROJECT_ROOT}")
 
-def check_dataset_exists():
+def check_dataset_exists(dataset_name="rotten_tomatoes"):
     """检查数据集是否已存在于本地"""
-    # 检查datasets缓存目录
-    cache_dir = DATASETS_DIR / "rotten_tomatoes"
+    # 从config读取缓存目录
+    from .config import config
+    cache_base_dir = Path(config.get_config('data')['cache_dir'])
+    cache_dir = cache_base_dir / dataset_name
     
     # Hugging Face datasets的典型缓存结构
     if cache_dir.exists() and any(cache_dir.iterdir()):
-        print("✅ 发现本地数据集缓存")
+        print(f"✅ 发现本地数据集缓存: {dataset_name}")
         return True
-    
-    # 检查环境变量指定的缓存位置
-    hf_cache = os.environ.get('HF_DATASETS_CACHE', '')
-    if hf_cache and Path(hf_cache).exists():
-        cache_path = Path(hf_cache) / "rotten_tomatoes"
-        if cache_path.exists() and any(cache_path.iterdir()):
-            print("✅ 发现HF缓存中的数据集")
-            return True
-    
-    print("❌ 未发现本地数据集缓存")
+  
+    print(f"❌ 未发现本地数据集缓存: {dataset_name}")
     return False
 
-def download_dataset_if_needed():
+def download_dataset_if_needed(dataset_name):
     """智能下载：如果本地没有数据集则下载，否则从本地加载"""
-    print("🔍 检查数据集状态...")
+    print(f"🔍 检查数据集状态: {dataset_name}")
     
-    # 创建必要目录
-    setup_directories()
+    # 从config读取缓存目录
+    from .config import config
+    cache_dir = config.get_config('data')['cache_dir']
+    cache_path = Path(cache_dir) / dataset_name
     
-    # 设置缓存目录
-    os.environ['HF_DATASETS_CACHE'] = str(DATASETS_DIR)
     
     try:
-        # 尝试加载数据集（会自动检查缓存）
-        print("📥 加载 Rotten Tomatoes 数据集...")
-        
-        if check_dataset_exists():
-            print("🚀 从本地缓存加载数据集")
-        else:
-            print("🌐 首次下载数据集到本地 (~1MB)")
-        
-        dataset = load_dataset("rotten_tomatoes", cache_dir=str(DATASETS_DIR))
-        
-        print(f"✅ 数据集加载成功:")
-        print(f"   📁 缓存位置: {DATASETS_DIR}")
-        print(f"   📊 数据统计:")
-        print(f"      训练集: {len(dataset['train']):,} 条")
-        print(f"      验证集: {len(dataset['validation']):,} 条")
-        print(f"      测试集: {len(dataset['test']):,} 条")
-        
+        # Hugging Face datasets的典型缓存结构
+        if cache_path.exists() and any(cache_path.iterdir()):
+            print(f"加载缓存数据集: {dataset_name}")
+        dataset = load_dataset(dataset_name, cache_dir=str(cache_path))
+        print(f"数据集加载成功,路径为: {cache_path}")
+
         return dataset
-        
+ 
     except Exception as e:
         print(f"❌ 数据集加载失败: {e}")
-        print("💡 请检查网络连接或尝试手动删除缓存重新下载")
+        print("💡 请检查网络连接或数据集名称是否正确")
         return None
 
+def get_dataset_by_name(dataset_name):
+    """根据数据集名称获取数据集"""
+    return download_dataset_if_needed(dataset_name)
+
 def get_dataset():
-    """获取数据集的主要接口函数"""
-    return download_dataset_if_needed()
+    """获取数据集的主要接口函数（向后兼容）"""
+    return download_dataset_if_needed("rotten_tomatoes")
 
 def clean_cache():
     """清理数据集缓存（用于强制重新下载）"""
