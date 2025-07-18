@@ -185,26 +185,40 @@ def load_model_pipeline(model_name: str, use_local: bool = True, device: str = "
     """
     return get_sentiment_model(model_name, use_local, device)
 
-def get_embedding_model(model_name: str = "sentence-transformers/all-mpnet-base-v2", use_local: bool = True):
+def get_embedding_model(model_name: str = None, use_local: bool = True, device: str = "auto"):
     """
-    获取嵌入模型
+    获取嵌入模型 (支持配置化)
     
     Args:
-        model_name: 嵌入模型名称
+        model_name: 嵌入模型名称，为None时从config读取
         use_local: 是否优先使用本地缓存
+        device: 设备选择 ("auto", "cpu", "cuda", "mps")
     
     Returns:
         SentenceTransformer: 嵌入模型
     """
+    # 如果没有指定模型名称，从config读取
+    if model_name is None:
+        from .config import config
+        model_name = config.get_config('models')['embedding_model']
+    
+    print(f"🤖 加载嵌入模型: {model_name}")
+    
     if use_local:
         model_path = get_model_path(model_name, "embedding")
     else:
         model_path = model_name
     
-    print(f"🤖 加载嵌入模型: {model_name}")
+    # 自动设备选择
+    if device == "auto":
+        from .config import get_device
+        device = get_device()
+        print(f"🔧 自动选择设备: {device}")
+    
+    print(f"🚀 创建SentenceTransformer (设备: {device})...")
     try:
         from sentence_transformers import SentenceTransformer
-        model = SentenceTransformer(model_path)
+        model = SentenceTransformer(model_path, device=device)
         print("✅ 嵌入模型加载成功")
         return model
     except Exception as e:
@@ -212,8 +226,22 @@ def get_embedding_model(model_name: str = "sentence-transformers/all-mpnet-base-
         # 如果本地模型失败，尝试直接从网络加载
         if use_local and model_path != model_name:
             print("🔄 尝试从网络直接加载...")
-            return get_embedding_model(model_name, use_local=False)
+            return get_embedding_model(model_name, use_local=False, device=device)
         raise
+
+def load_embedding_model(model_name: str, use_local: bool = True, device: str = "auto"):
+    """
+    简洁的嵌入模型加载函数 (类似 load_model_pipeline)
+    
+    Args:
+        model_name: 模型名称
+        use_local: 是否使用本地缓存
+        device: 设备选择
+        
+    Returns:
+        SentenceTransformer: 嵌入模型
+    """
+    return get_embedding_model(model_name, use_local, device)
 
 def list_cached_models():
     """列出所有已缓存的模型"""

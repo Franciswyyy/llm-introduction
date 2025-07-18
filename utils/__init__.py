@@ -42,6 +42,7 @@ from .model_manager import (
     get_embedding_model,
     get_model_path,
     load_model_pipeline,
+    load_embedding_model,
     list_cached_models,
     clear_model_cache
 )
@@ -79,6 +80,7 @@ __all__ = [
     'get_embedding_model',
     'get_model_path',
     'load_model_pipeline',
+    'load_embedding_model',
     'list_cached_models',
     'clear_model_cache'
 ]
