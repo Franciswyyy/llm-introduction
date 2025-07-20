@@ -23,12 +23,10 @@ from sklearn.metrics import classification_report
 
 
 def main():
-    """主函数"""
     
-    # 1. 加载数据集
-    data = HuggingFaceLoader.load_dataset("rotten_tomatoes")  # 调用core loader的静态方法
-#   data = HuggingFaceLoader.load_dataset("imdb")
-#   data = HuggingFaceLoader.load_dataset("ag_news")
+    # 1. 加载数据集 调用core loader的静态方法
+    data = HuggingFaceLoader.load_dataset("rotten_tomatoes")
+
     if data is None:
         raise Exception("数据集加载失败")
 
@@ -53,7 +51,6 @@ def evaluate_performance(y_true, y_pred):
         target_names=["Negative Review", "Positive Review"]
     )
     print(performance) 
-
 
 
 if __name__ == "__main__":
