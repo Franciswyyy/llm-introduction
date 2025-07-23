@@ -185,6 +185,77 @@ def load_model_pipeline(model_name: str, use_local: bool = True, device: str = "
     """
     return get_sentiment_model(model_name, use_local, device)
 
+def get_generation_model(model_name: str = None, use_local: bool = True, device: str = "auto"):
+    """
+    获取文本生成模型 (支持配置化和缓存)
+    
+    Args:
+        model_name: 模型名称，为None时使用默认的生成模型
+        use_local: 是否优先使用本地缓存
+        device: 设备选择 ("auto", "cpu", "cuda", "mps")
+    
+    Returns:
+        pipeline: 文本生成pipeline
+    """
+    # 如果没有指定模型名称，使用默认生成模型
+    if model_name is None:
+        model_name = "google/flan-t5-small"  # 默认使用FLAN-T5 small
+    
+    print(f"🤖 加载文本生成模型: {model_name}")
+    
+    if use_local:
+        model_path = get_model_path(model_name, "auto")
+    else:
+        model_path = model_name
+    
+    # 自动设备选择
+    if device == "auto":
+        from .config import get_device
+        device = get_device()
+        print(f"🔧 自动选择设备: {device}")
+    
+    # 转换设备格式
+    if device == "cpu":
+        device_id = -1
+    elif device == "mps":
+        device_id = "mps"
+    elif device == "cuda":
+        device_id = 0
+    else:
+        device_id = -1
+    
+    print(f"🚀 创建Text2Text生成Pipeline (设备: {device})...")
+    try:
+        pipe = pipeline(
+            "text2text-generation",
+            model=model_path,
+            tokenizer=model_path,
+            device=device_id
+        )
+        print("✅ 生成模型加载成功")
+        return pipe
+    except Exception as e:
+        print(f"❌ 生成模型加载失败: {e}")
+        # 如果本地模型失败，尝试直接从网络加载
+        if use_local and model_path != model_name:
+            print("🔄 尝试从网络直接加载...")
+            return get_generation_model(model_name, use_local=False, device=device)
+        raise
+
+def load_generation_pipeline(model_name: str, use_local: bool = True, device: str = "auto"):
+    """
+    简洁的文本生成pipeline加载函数 (类似 load_model_pipeline)
+    
+    Args:
+        model_name: 模型名称
+        use_local: 是否使用本地缓存
+        device: 设备选择
+        
+    Returns:
+        pipeline: 文本生成pipeline
+    """
+    return get_generation_model(model_name, use_local, device)
+
 def get_embedding_model(model_name: str = None, use_local: bool = True, device: str = "auto"):
     """
     获取嵌入模型 (支持配置化)

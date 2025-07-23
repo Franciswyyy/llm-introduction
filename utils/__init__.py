@@ -40,9 +40,11 @@ from .data_builder import (
 from .model_manager import (
     get_sentiment_model,
     get_embedding_model,
+    get_generation_model,
     get_model_path,
     load_model_pipeline,
     load_embedding_model,
+    load_generation_pipeline,
     list_cached_models,
     clear_model_cache
 )
@@ -78,9 +80,11 @@ __all__ = [
     # 模型管理
     'get_sentiment_model',
     'get_embedding_model',
+    'get_generation_model',
     'get_model_path',
     'load_model_pipeline',
     'load_embedding_model',
+    'load_generation_pipeline',
     'list_cached_models',
     'clear_model_cache'
 ]
