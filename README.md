@@ -180,7 +180,7 @@ python predict.py
 ```bash
 # 删除模型文件
 rm -rf resources/
-
+！
 # 删除生成的图片
 rm -f confusion_matrix.png
 ```
