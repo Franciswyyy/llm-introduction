@@ -8,7 +8,7 @@
 - **模型**: twitter-roberta-base-sentiment-latest (~500MB)
 - **数据集**: Rotten Tomatoes (~1MB)
 - **优化**: Mac M2 Apple Silicon MPS 加速
-
+12
 ## 💾 存储信息
 11123123
 ### 文件大小
