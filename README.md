@@ -7,7 +7,7 @@
 - **任务**: 电影评论二分类（好评/差评）
 - **模型**: twitter-roberta-base-sentiment-latest (~500MB)
 - **数据集**: Rotten Tomatoes (~1MB)
-- **优化**: Mac M2 Apple Silicon MPS 加速
+- **优化**: Mac M2 123Apple Silicon MPS 加速
 12
 ## 💾 存储信息
 11123123
